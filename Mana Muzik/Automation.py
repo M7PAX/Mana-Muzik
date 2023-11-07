@@ -1,11 +1,11 @@
 import os
 import mutagen
-from mutagen.id3 import ID3, TIT2, TPE1, TRCK, TALB
-from mutagen.id3 import ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3NoHeaderError
+from mutagen.id3 import ID3, TIT2, TPE1, TRCK, TALB
 
-
-MusicFolder ='C:/Users/niksu/Music/Playboi Carti'  #'C:/Users/niksu/Music/Juice WRLD'
+MusicFolder ='C:/Users/niksu/Music/Juice WRLD'
+Artist = "Juice WRLD"
 files = os.listdir(MusicFolder)
 
 def TitleAuto():
@@ -25,9 +25,8 @@ def TitleAuto():
             audio.save(file_path, v1=2)
             changed = EasyID3(file_path)
             
-
 def ArtistAuto():
-    artist = TPE1(encoding=3, text='Playboi Carti')
+    #artist = TPE1(encoding=3, text=Artist)
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
@@ -39,7 +38,7 @@ def ArtistAuto():
                 audio.add_tags()
 
             type(audio)
-            audio['artist'] = "Playboi Carti"
+            audio['artist'] = Artist
             audio.save(file_path, v1=2)
             changed = EasyID3(file_path)
 
@@ -59,3 +58,8 @@ def RemoveAlbum():
             if 'TALB' in audio:
                 del audio['TALB']
             audio.save()
+
+TitleAuto()
+ArtistAuto()
+RemoveTN()
+RemoveAlbum()

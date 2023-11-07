@@ -1,24 +1,26 @@
 import os
-import EditMP3
-import FindFiles
+import Functions
 import tkinter as tk
+from pathlib import Path
 from PIL import Image, ImageTk
 from tkinter import messagebox, ttk
 
-MusicFolder = 'C:/Users/niksu/Music/Juice WRLD'
-files = os.listdir(MusicFolder)
+# Directory = 'c:/'
+#Contents = os.listdir(Directory)
 
 window = tk.Tk()
-window.geometry("700x500")
+window.geometry("700x550")
 window.resizable(width=False, height=False)
 window.title("Mana Muzik")
 
 #Frames
 TopBarF = tk.Frame(window)
 FolderList = tk.Frame(window)
+DropMenuF = tk.Frame(FolderList)
 cover = tk.Frame(window)
 editor = tk.Frame(window)
 
+FileF = tk.Frame(editor)
 TitleF = tk.Frame(editor)
 ArtistF = tk.Frame(editor)
 YearF = tk.Frame(editor)
@@ -37,13 +39,19 @@ AutoB.bind("<Button-1>", AutoClick)
 Divide = tk.Label(TopBarF, text="|")
 DirectoryL = tk.Label(TopBarF, text="Music Directory:")
 MusicDirectory = tk.StringVar()
-DirectoryE = tk.Entry(TopBarF, bd=3, textvariable=MusicFolder)
+DirectoryE = tk.Entry(TopBarF, bd=3)#textvariable=Directory
+
+def CurrentDirectory():
+    Entry = Path(DirectoryE.get())
+    if Entry.is_dir():
+        Directory = "c:/Users/niksu/Music"#DirectoryE.get()
+        return Directory
 
 ComfirmB = tk.Button(TopBarF, text ="✔")
 def Comfirm(event):
-    messagebox.showinfo(
-        message=f"ComfirmB"
-    )
+    Directory = CurrentDirectory()
+    DropMenu['values'] = (Functions.GetMusicFolders(Directory))
+
 ComfirmB.bind("<Button-1>", Comfirm)
 
 InfoB = tk.Label(TopBarF, text="INFO")
@@ -54,21 +62,30 @@ def Info(event):
 InfoB.bind("<Button-1>", Info)
 
 #Folder List Select 
-DropMenu = ttk.Combobox(FolderList)
+FolderL = tk.Label(DropMenuF, text="Forder:")
+DropMenu = ttk.Combobox(DropMenuF, state="readonly")
 def DropMenuSelect(event):
-    selection = DropMenu.get()
-    messagebox.showinfo(
-        message=f"DropMenu {selection}"
-    )
-DropMenu['values'] = ("---","Juice WRLD", "Playboi Carti","XXXTENTACION")
-DropMenu.current(0)
+    CurrentDir = CurrentDirectory() + "/" + DropMenu.get()
+    Contents = os.listdir(CurrentDir)
+    ListboxUpdate(Contents)
 DropMenu.bind("<<ComboboxSelected>>", DropMenuSelect)
 
-scrollbar = tk.Scrollbar(FolderList)
-listbox = tk.Listbox(FolderList, width=50, yscrollcommand = scrollbar.set)
-for file in files:
-    listbox.insert(tk.END, file)
-scrollbar.config(command = listbox.yview)
+Scrollbar = tk.Scrollbar(FolderList)
+Listbox = tk.Listbox(FolderList, width=50, yscrollcommand = Scrollbar.set)
+def ListboxSelect(SelectedText):
+    CurrentDir = CurrentDirectory() + "/" + SelectedText
+    return CurrentDir
+def ListboxUpdate(Contents):
+    Listbox.delete(0, tk.END)
+    for Content in Contents:
+        Listbox.insert(tk.END, Content)
+    Scrollbar.config(command = Listbox.yview)
+def ListboxSelected(event):
+    SelectedIndex = Listbox.curselection()
+    SelectedText = Listbox.get(SelectedIndex)
+    FillFileE(SelectedText)
+    ListboxSelect(SelectedText)
+Listbox.bind("<<ListboxSelect>>", ListboxSelected)
 
 #Cover
 image = Image.open("C:/Users/niksu/OneDrive/New folder/Attēli/img_2547.webp")
@@ -78,29 +95,39 @@ photo = ImageTk.PhotoImage(image)
 CoverImage = tk.Label(cover, image=photo, background="black")
 
 #Editor
-Title = tk.Label(TitleF, text="Title:")
+def FillFileE(FillText):
+    FileE.delete(0, tk.END)
+    period = FillText.rfind(".")
+    if period != -1:
+        UpdatedText = FillText[:period]
+    FileE.insert(0, UpdatedText)
+FileL = tk.Label(FileF, text="File:", width=8)
+FileInput = tk.StringVar()
+FileE = tk.Entry(FileF,bd=3,textvariable=FileInput)
+
+TitleL = tk.Label(TitleF, text="Title:", width=8)
 TitleInput = tk.StringVar()
 TitleE = tk.Entry(TitleF,bd=3,textvariable=TitleInput)
 
-Artist = tk.Label(ArtistF, text="Artist:")
+ArtistL = tk.Label(ArtistF, text="Artist:", width=8)
 ArtistInput = tk.StringVar()
 ArtistE = tk.Entry(ArtistF,bd=3,textvariable=ArtistInput)
 
-Year = tk.Label(YearF, text="Year:")
+YearL = tk.Label(YearF, text="Year:", width=8)
 YearInput = tk.StringVar()
 YearE = tk.Entry(YearF,bd=3,textvariable=YearInput)
 
-Comment = tk.Label(CommentF, text="Comment:")
-CommentInput = tk.StringVar()
-CommentE = tk.Entry(CommentF,bd=3,textvariable=CommentInput)
-
-Album = tk.Label(AlbumF, text="Album:")
+AlbumL = tk.Label(AlbumF, text="Album:", width=8)
 AlbumInput = tk.StringVar()
 AlbumE = tk.Entry(AlbumF,bd=3,textvariable=AlbumInput)
 
-Genre = tk.Label(GenreF, text="Genre:")
+GenreL = tk.Label(GenreF, text="Genre:", width=8)
 GenreInput = tk.StringVar()
 GenreE = tk.Entry(GenreF,bd=3,textvariable=GenreInput)
+
+CommentL = tk.Label(CommentF, text="Comment:", width=8)
+CommentInput = tk.StringVar()
+CommentE = tk.Entry(CommentF,bd=3,textvariable=CommentInput)
 
 SaveB = tk.Button(window, text ="Save")
 def Save(event):
@@ -119,43 +146,45 @@ ComfirmB.pack(side="left",fill="both")
 InfoB.pack(side="left",fill="both")
 
 FolderList.pack(side="left",fill="y")
+DropMenuF.pack(side="top",fill="x")
+FolderL.pack(side="left")
 DropMenu.pack(side="top",fill="x")
-listbox.pack(side="left",fill="y")
-scrollbar.pack( side = "left", fill = "y")
+Listbox.pack(side="left",fill="y")
+Scrollbar.pack( side="left",fill="y")
 
 cover.pack(side="top")
-CoverImage.pack(side="top",fill="both", expand=True)
+CoverImage.pack(side="top",fill="both",expand=True,pady=(10,10))
 
-editor.pack(side="top",fill="both", expand=True)
+editor.pack(side="top",fill="both",expand=True)
+
+FileF.pack(side="top",fill="x")
+FileL.pack(side="left")
+FileE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 TitleF.pack(side="top",fill="x")
-Title.pack(side="left")
-TitleE.pack(side="left",fill="x",expand=True)
+TitleL.pack(side="left")
+TitleE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 ArtistF.pack(side="top",fill="x")
-Artist.pack(side="left")
-ArtistE.pack(side="left",fill="x",expand=True)
+ArtistL.pack(side="left")
+ArtistE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 YearF.pack(side="top",fill="x")
-Year.pack(side="left")
-YearE.pack(side="left",fill="x",expand=True)
-
-CommentF.pack(side="top",fill="x")
-Comment.pack(side="left")
-CommentE.pack(side="left",fill="x",expand=True)
+YearL.pack(side="left")
+YearE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 AlbumF.pack(side="top",fill="x")
-Album.pack(side="left")
-AlbumE.pack(side="left",fill="x",expand=True)
+AlbumL.pack(side="left")
+AlbumE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 GenreF.pack(side="top",fill="x")
-Genre.pack(side="left")
-GenreE.pack(side="left",fill="x",expand=True)
+GenreL.pack(side="left")
+GenreE.pack(side="left",fill="x",expand=True,padx=(0,10))
+
+CommentF.pack(side="top",fill="x")
+CommentL.pack(side="left")
+CommentE.pack(side="left",fill="x",expand=True,padx=(0,10))
 
 SaveB.pack(side="right",fill="both",expand=True)
 
 window.mainloop()
-
-def Program():
-    MusicFolder = 'C:/Users/niksu/Music/Juice WRLD' #FindFiles.GetDirectory()
-    FindFiles.VerifyFiles(MusicFolder)

@@ -10,7 +10,7 @@ def GetTitle(FilePath):
     try:
         audio = EasyID3(FilePath)
         title = audio['title'][0]
-        return print(title)
+        return title
     except Exception as e:
         #print(f"Error: {e}")
         return None
@@ -19,7 +19,43 @@ def GetArtist(FilePath):
     try:
         audio = EasyID3(FilePath)
         artist = audio['artist'][0]
-        return print(artist)
+        return artist
+    except Exception as e:
+        #print(f"Error: {e}")
+        return None
+
+def GetAlbum(FilePath):
+    try:
+        audio = EasyID3(FilePath)
+        album = audio['album'][0]
+        return album
+    except Exception as e:
+        #print(f"Error: {e}")
+        return None
+    
+def GetTN(FilePath):
+    try:
+        audio = EasyID3(FilePath)
+        TN = audio['tracknumber'][0]
+        return TN
+    except Exception as e:
+        #print(f"Error: {e}")
+        return None
+    
+def GetGenre(FilePath):
+    try:
+        audio = EasyID3(FilePath)
+        genre = audio['genre'][0]
+        return genre
+    except Exception as e:
+        #print(f"Error: {e}")
+        return None
+    
+def GetComment(FilePath):
+    try:
+        audio = EasyID3(FilePath)
+        comment = audio['comment'][0]
+        return comment
     except Exception as e:
         #print(f"Error: {e}")
         return None
@@ -46,21 +82,42 @@ def ArtistChange(FilePath,NewArtist):
             audio.save(FilePath)
             changed = EasyID3(FilePath)
 
-def RemoveTN():
-    for file in files:
-        if file.endswith(".mp3"):
-            file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            audio.delall('TRCK')
-            audio.save()
+def AlbumChange(FilePath, NewAlbum):
+    try:
+        audio = EasyID3(FilePath)
+    except mutagen.id3.ID3NoHeaderError:
+        audio = mutagen.File(FilePath, easy=True)
+        audio.add_tags()
 
-def RemoveAlbum():
-    for file in files:
-        if file.endswith(".mp3"):
-            file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            if 'TALB' in audio:
-                del audio['TALB']
-            audio.save()
+    audio['album'] = NewAlbum
+    audio.save()
 
-GetArtist(Path)
+def TNChange(FilePath, NewTN):
+    try:
+        audio = EasyID3(FilePath)
+    except mutagen.id3.ID3NoHeaderError:
+        audio = mutagen.File(FilePath, easy=True)
+        audio.add_tags()
+
+    audio['tracknumber'] = str(NewTN)
+    audio.save()
+
+def GenreChange(FilePath, NewGenre):
+    try:
+        audio = EasyID3(FilePath)
+    except mutagen.id3.ID3NoHeaderError:
+        audio = mutagen.File(FilePath, easy=True)
+        audio.add_tags()
+
+    audio['genre'] = NewGenre
+    audio.save()
+
+def CommentChange(FilePath, NewComment):
+    try:
+        audio = EasyID3(FilePath)
+    except mutagen.id3.ID3NoHeaderError:
+        audio = mutagen.File(FilePath, easy=True)
+        audio.add_tags()
+
+    audio['comment'] = NewComment
+    audio.save()

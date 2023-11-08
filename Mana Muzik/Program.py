@@ -1,4 +1,5 @@
 import os
+import MP3Info
 import Functions
 import tkinter as tk
 from pathlib import Path
@@ -9,7 +10,7 @@ from tkinter import messagebox, ttk
 #Contents = os.listdir(Directory)
 
 window = tk.Tk()
-window.geometry("700x550")
+window.geometry("800x600")#700x550
 window.resizable(width=False, height=False)
 window.title("Mana Muzik")
 
@@ -44,7 +45,7 @@ DirectoryE = tk.Entry(TopBarF, bd=3)#textvariable=Directory
 def CurrentDirectory():
     Entry = Path(DirectoryE.get())
     if Entry.is_dir():
-        Directory = "c:/Users/niksu/Music"#DirectoryE.get()
+        Directory = "/home/mipax/Music"#DirectoryE.get() c:/Users/niksu/Music
         return Directory
 
 ComfirmB = tk.Button(TopBarF, text ="✔")
@@ -84,11 +85,14 @@ def ListboxSelected(event):
     SelectedIndex = Listbox.curselection()
     SelectedText = Listbox.get(SelectedIndex)
     FillFileE(SelectedText)
+    CurrentDir = ListboxSelect(SelectedText)
+    #FillTitleE()
+    print(MP3Info.GetTitle(CurrentDir))
     ListboxSelect(SelectedText)
 Listbox.bind("<<ListboxSelect>>", ListboxSelected)
 
 #Cover
-image = Image.open("C:/Users/niksu/OneDrive/New folder/Attēli/img_2547.webp")
+image = Image.open("/home/mipax/Pictures/uzinanimegirl.jpg")#C:/Users/niksu/OneDrive/New folder/Attēli/img_2547.webp
 new_size = (300, 300)
 image = image.resize(new_size)
 photo = ImageTk.PhotoImage(image)
@@ -105,6 +109,9 @@ FileL = tk.Label(FileF, text="File:", width=8)
 FileInput = tk.StringVar()
 FileE = tk.Entry(FileF,bd=3,textvariable=FileInput)
 
+def FillTitleE(FillText):
+    TitleE.delete(0, tk.END)
+    TitleE.insert(0, FillText)
 TitleL = tk.Label(TitleF, text="Title:", width=8)
 TitleInput = tk.StringVar()
 TitleE = tk.Entry(TitleF,bd=3,textvariable=TitleInput)

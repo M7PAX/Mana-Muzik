@@ -4,8 +4,8 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 from mutagen.id3 import ID3, TIT2, TPE1, TRCK, TALB
 
-MusicFolder ='C:/Users/niksu/Music/Juice WRLD'
-Artist = "Juice WRLD"
+MusicFolder ='/home/mipax/Music/Lil Uzi Vert Unreleased'
+Artist = "Lil Uzi Vert"
 files = os.listdir(MusicFolder)
 
 def TitleAuto():

@@ -1,5 +1,7 @@
 import eyed3
 import mutagen
+import Functions
+from mutagen.id3 import ID3, APIC
 from mutagen.easyid3 import EasyID3
 
 # Path = "C:/Users/niksu/Music/folder/Freddie Dredd - Kill Again.mp3"
@@ -92,16 +94,20 @@ def ArtistChange(FilePath, NewArtist):
     audio["artist"] = NewArtist
     audio.save(FilePath)
 
-#eyeD3
+#eyeD3 and mutagen.id3
 def CoverChange(FilePath, NewCover):
     if ('/' in NewCover) == True:
+        if NewCover.startswith('{' or '"') and NewCover.endswith('}' or '"'):
+            NewCover = NewCover[1:-1]
+        ImgFormat = Functions.GetImgFormat(NewCover)
+        if NewCover == None:
+            return None
+
         audio = eyed3.load(FilePath)
         audio.initTag(version=(2, 3, 0))
-        if NewCover.startswith('{') and NewCover.endswith('}'):
-            NewCover = NewCover[1:-1]
-        with open(NewCover, "rb") as image_file:
-            imagedata = image_file.read()
-        audio.tag.images.set(3, imagedata, "image/jpeg", u"cover")
+        with open(NewCover, "rb") as albumart:
+            imagedata = albumart.read()
+        audio.tag.images.set(3, imagedata, f"image/{ImgFormat}", u"cover")
         audio.tag.save()
 
 def AlbumChange(FilePath, NewAlbum):
@@ -136,8 +142,12 @@ def CommentChange(FilePath,NewComment):
 
 def RemoveCover(FilePath):
     audio = eyed3.load(FilePath)
-    audio.tag.images.remove('')
+    audio.tag.images.remove("cover")
     audio.tag.save()
+
+    audio = ID3(FilePath)
+    audio.delall("APIC")
+    audio.save()
 
 # TitleChange(Path, "Kill Again")
 # ArtistChange(Path, "Freddie Dredd")

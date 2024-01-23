@@ -23,9 +23,8 @@ def TitleAuto():
             type(audio)
             title = file[:-4]
             audio['title'] = title
-            audio.save(file_path, v1=2)
-            changed = EasyID3(file_path)
-            
+            audio.save()
+
 def ArtistAuto():
     #artist = TPE1(encoding=3, text=Artist)
     for file in files:
@@ -40,16 +39,8 @@ def ArtistAuto():
 
             type(audio)
             audio['artist'] = Artist
-            audio.save(file_path, v1=2)
-            changed = EasyID3(file_path)
-
-def RemoveTN():
-    for file in files:
-        if file.endswith(".mp3"):
-            file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            audio.delall('TRCK')
             audio.save()
+
 
 def RemoveAlbum():
     for file in files:
@@ -60,6 +51,23 @@ def RemoveAlbum():
                 del audio['TALB']
             audio.save()
 
+def RemoveTN():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_path = os.path.join(MusicFolder, file)
+            audio = ID3(file_path)
+            if 'TRCK' in audio:
+                del audio['TRCK']
+            audio.save()
+
+def RemoveGenre():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_path = os.path.join(MusicFolder, file)
+            audio = eyed3.load(file_path)
+            audio.tag.genre = None
+            audio.tag.save()
+
 def RemoveYear():
     for file in files:
         if file.endswith(".mp3"):
@@ -69,9 +77,20 @@ def RemoveYear():
                 del audio['TDRC']
             audio.save()
 
+def RemoveComment():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_path = os.path.join(MusicFolder, file)
+            audio = eyed3.load(file_path)
+            audio.tag.comments.set('')
+            audio.tag.save()
+
+
 TitleAuto()
 ArtistAuto()
 
 RemoveAlbum()
 RemoveTN()
+RemoveGenre()
 RemoveYear()
+RemoveComment()

@@ -3,14 +3,14 @@ import io
 import eyed3
 import MP3Info
 import Functions
+import tkinterDnD
 import tkinter as tk
 from tkinter import *
 from pathlib import Path
-from TkinterDnD2 import *
 from PIL import Image, ImageTk
 from tkinter import messagebox, ttk 
 
-window = TkinterDnD.Tk()
+window = tkinterDnD.Tk()
 
 window.geometry("780x680")
 window.minsize(780,680)
@@ -54,7 +54,7 @@ ForlderDirE = tk.Entry(TopBarF,textvariable=MusicForlderDir)
 def GetForderDir():
     Entry = Path(ForlderDirE.get())
     if Entry.is_dir():
-        ForlderDir = ForlderDirE.get() # "c:/Users/niksu/Music"
+        ForlderDir = "c:/Users/niksu/Music" # ForlderDirE.get()
         if ForlderDir.startswith('"') and ForlderDir.endswith('"'):
             ForlderDir = ForlderDir[1:-1]
         return ForlderDir
@@ -68,17 +68,21 @@ ComfirmB.bind("<Button-1>", Comfirm)
 
 InfoB = tk.Label(TopBarF, text="Tutorial/Info")
 def Info(event):
-    messagebox.showinfo(
-        message=f"""
-Tutorial/Info
+    messagebox.showinfo(title="Info",
+        message=f"""Tutorial and Instructions
 
-1. Add a directory to the topbar "Music Directory", which is folder with a folder of each artist or have a folder of youre mp3 files.
-2. Select the right Forder in the dropmenu "Forders".
-3. Select any song from the listbox and start editing youre mp3 files just dont forget to save.
-Note: To change the the cover you drag in the file in "Cover" where it says "Drop File Here..." or write it in.
+1. Locate the "Music Directory" option in the top bar and add a directory, which is folder with a folder of each artist or have a folder of youre mp3 files.
+2. Use the "Folders" drop-down menu to select the specific folder you want to work with.
+3. In the listbox, choose the desired song that you want to edit. Begin the editing process, making any changes needed. Be sure to save your modifications when done.
+Note: To update the album cover, drag and drop an image file (only supporting jpg, jpeg, and png formats) into the blank space where the cover would be displayed.
 
-Things that will make the program not work properly:
-Pasting, copying, highlighting text or using "Tab" in the editor will make it not save the changes.
+IMPORTANT Actions That May Cause Issues:
+Avoid copying, highlighting text, or using the "Tab" key in the editor, as these actions will prevent changes from being saved.
+
+Bugs:
+In case the cover change doesn't work correctly, try removing the existing cover and then attempt to set it again.
+
+These guidelines should help you navigate through the program smoothly. If you encounter any other feel free to reach out to me on GitHub at M7PAX.
 """)
 InfoB.bind("<Button-1>", Info)
 
@@ -127,47 +131,63 @@ Listbox.bind("<<ListboxSelect>>", ListboxSelected)
 
 #Cover
 ImgSize = (300, 300)
-img = ImageTk.PhotoImage(Image.open("Images/Default.jpg").resize(ImgSize))
 def FillCover(Path):
-    try:
-        audio = eyed3.load(Path)
-        img = ImageTk.PhotoImage(Image.open("Images/Default.jpg").resize(ImgSize))
+    audio = eyed3.load(Path)
+    if audio.tag and audio.tag.images:
         for i in audio.tag.images: 
             img = ImageTk.PhotoImage(Image.open(io.BytesIO(i.image_data)).resize(ImgSize))
         CoverImage.image = img
         CoverImage.config(image=img)
-    except Exception as e:
-        # print(f"Error: {e}")
-        return
-CoverImage = tk.Label(Cover,image=img)
+
+        CoverDnD.pack_forget()
+        CoverB.pack_forget()
+        CoverImage.pack(side="top",fill="both",expand=True,pady=(10,0))
+        CoverB.pack(side="top",fill="x",expand=True,pady=(0,10))
+    else:
+        CoverImage.pack_forget()
+        CoverB.pack_forget()
+        CoverDnD.pack(side="top",pady=(10,0))
+        CoverB.pack(side="top",fill="x",expand=True,pady=(0,10))
+CoverImage = tk.Label(Cover)
 
 CoverB = tk.Button(Cover, text =" x ",bd=1)
 def CoverRemove(event):
-    if GetSelectedIndex() == None:
-        return
-    else:
-        result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
-        if result == 'yes':
-            MP3Info.RemoveCover(GetCurrentDir())
-            img = ImageTk.PhotoImage(Image.open("Images/Default.jpg").resize(ImgSize))
-            CoverImage.image = img
-            CoverImage.config(image=img)
-        else:
+    audio = eyed3.load(GetCurrentDir())
+    if audio.tag and audio.tag.images:
+        if GetSelectedIndex() == None:
             return
+        else:
+            result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
+            if result == 'yes':
+                MP3Info.RemoveCover(GetCurrentDir())
+                CoverImage.pack_forget()
+                CoverB.pack_forget()
+                CoverDnD.pack(side="top",pady=(10,0))
+                CoverB.pack(side="top",fill="x",expand=True,pady=(0,10))
+            else:
+                return
+    else:
+        messagebox.showwarning(title="Invalid",message=f"There is no image to remove!")
 CoverB.bind("<Button-1>", CoverRemove)
 
 CoverInput = StringVar()
-CoverInput.set("Drop Image Here...")
+
+def drop(event):
+    CoverInput.set(event.data)
+
+def drag_command(event):
+    return (tkinterDnD.COPY, "DND_Text")
+
 CoverL = tk.Label(CoverF,text="Cover:",width=8)
 CoverE = Entry(CoverF,textvar=CoverInput)
-CoverE.drop_target_register(DND_FILES)
-def DragDrop(event):
-    CoverInput.set(event.data)
-CoverE.dnd_bind('<<Drop>>',DragDrop)
+CoverE.register_drop_target("*")
+CoverE.bind("<<Drop>>", drop)
+CoverE.register_drag_source("*")
+CoverE.bind("<<DragInitCmd>>", drag_command)
+CoverDnD = ttk.Label(Cover, ondrop=drop, ondragstart=drag_command,textvar=CoverInput,relief="solid",padding=142.4,width=3)
 
 def RefreshPathE():
     CoverE.delete(0, tk.END)
-    CoverInput.set("Drop Image Here...")
 PathB = tk.Button(CoverF, text=" x ",bd=1)
 def RemovePath(event):
     CoverE.delete(0, tk.END)
@@ -308,7 +328,7 @@ Scrollbar.pack( side="left",fill="y")
 
 #Editor
 Cover.pack(side="top")
-CoverImage.pack(side="top",fill="both",expand=True,pady=(10,0))
+CoverDnD.pack(side="top",pady=(10,0))
 CoverB.pack(side="top",fill="x",expand=True,pady=(0,10))
 
 Editor.pack(side="top",fill="both",expand=True)

@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 # MusicFolder ='C:/Users/niksu/Music'
 
@@ -18,3 +19,11 @@ def FileChange(FilePath,NewFile):
         Dir = FilePath[:last_slash_index]
     NewPath = os.path.join(Dir,NewFile+".mp3")
     os.rename(FilePath,NewPath)
+
+def GetImgFormat(ImgPath):
+    try:
+        with Image.open(ImgPath) as img:
+            return img.format.lower()
+    except Exception as e:
+        # print(f"Error: {e}")
+        return None

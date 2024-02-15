@@ -8,6 +8,7 @@ from mutagen.id3 import ID3, TIT2, TPE1, TRCK, TALB
 MusicFolder ='C:/Users/niksu/Music/Juice WRLD'
 Artist = "Juice WRLD"
 files = os.listdir(MusicFolder)
+#file, title, artist, album, tn, genre, year, comment
 
 def TitleAuto():
     for file in files:
@@ -86,11 +87,11 @@ def RemoveComment():
             audio.tag.save()
 
 
-TitleAuto()
-ArtistAuto()
+# TitleAuto()
+# ArtistAuto()
 
-RemoveAlbum()
-RemoveTN()
-RemoveGenre()
-RemoveYear()
-RemoveComment()
+# RemoveAlbum()
+# RemoveTN()
+# RemoveGenre()
+# RemoveYear()
+# RemoveComment()

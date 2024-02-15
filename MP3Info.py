@@ -35,7 +35,7 @@ def GetAlbum(FilePath):
     return str(album)
 
 
-def GetTN(FilePath):
+def GetTn(FilePath):
     try:
         audio = EasyID3(FilePath)
         tn = audio.get("tracknumber")[0]
@@ -161,7 +161,7 @@ def RemoveCover(FilePath):
 # print(GetTitle(Path))
 # print(GetArtist(Path))
 # print(GetAlbum(Path))
-# print(GetTN(Path))
+# print(GetTn(Path))
 # print(GetGenre(Path))
 # print(GetYear(Path))
 # print(GetComment(Path))

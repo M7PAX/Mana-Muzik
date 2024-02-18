@@ -1,5 +1,6 @@
 import os
 import eyed3
+import MP3Info
 import mutagen
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
@@ -52,6 +53,12 @@ def RemoveAlbum():
                 del audio['TALB']
             audio.save()
 
+def RemoveCover():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_path = os.path.join(MusicFolder, file)
+            MP3Info.RemoveCover(file_path)
+
 def RemoveTN():
     for file in files:
         if file.endswith(".mp3"):
@@ -86,11 +93,11 @@ def RemoveComment():
             audio.tag.comments.set('')
             audio.tag.save()
 
-
 # TitleAuto()
 # ArtistAuto()
 
 # RemoveAlbum()
+# RemoveCover()
 # RemoveTN()
 # RemoveGenre()
 # RemoveYear()

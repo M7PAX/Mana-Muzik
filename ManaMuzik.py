@@ -197,22 +197,25 @@ class Cover:
             self.CoverB.pack(side="top",fill="x",expand=True,pady=(0,10),padx=(47,47))
 
     def CoverRemove(self, event):
-        audio = eyed3.load(FLClass.GetCurrentDir())
-        if audio.tag and audio.tag.images:
-            if FLClass.GetSelectedIndex() == None:
-                return
-            else:
-                result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
-                if result == 'yes':
-                    MP3Info.RemoveCover(FLClass.GetCurrentDir())
-                    self.CoverImage.pack_forget()
-                    self.CoverB.pack_forget()
-                    self.CoverDnD.pack(side="top",pady=(10,0))
-                    self.CoverB.pack(side="top",fill="x",expand=True,pady=(0,10))
-                else:
-                    return
+        if FLClass.GetSelectedIndex() == None:
+            return
         else:
-            messagebox.showwarning(title="Invalid",message=f"There is no image to remove!")
+            audio = eyed3.load(FLClass.GetCurrentDir())
+            if audio.tag and audio.tag.images:
+                if FLClass.GetSelectedIndex() == None:
+                    return
+                else:
+                    result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
+                    if result == 'yes':
+                        MP3Info.RemoveCover(FLClass.GetCurrentDir())
+                        self.CoverImage.pack_forget()
+                        self.CoverB.pack_forget()
+                        self.CoverDnD.pack(side="top",pady=(10,0))
+                        self.CoverB.pack(side="top",fill="x",expand=True,pady=(0,10),padx=(47,47))
+                    else:
+                        return
+            else:
+                messagebox.showwarning(title="Invalid",message=f"There is no image to remove!")
 
     def drop(self, event):
         self.CoverInput.set(event.data)

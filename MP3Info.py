@@ -94,8 +94,10 @@ def ArtistChange(FilePath, NewArtist):
     audio["artist"] = NewArtist
     audio.save(FilePath)
 
-#eyeD3 and mutagen.id3
+# eyeD3 and mutagen.id3
+# add image format check for only jpg and png format
 def CoverChange(FilePath, NewCover):
+    RemoveCover(FilePath)
     if ('/' in NewCover) == True:
         if NewCover.startswith('{' or '"') and NewCover.endswith('}' or '"'):
             NewCover = NewCover[1:-1]
@@ -103,12 +105,17 @@ def CoverChange(FilePath, NewCover):
         if NewCover == None:
             return None
 
+        with open(NewCover, "rb") as AlbumArt:
+            ImgData = AlbumArt.read()
+
         audio = eyed3.load(FilePath)
         audio.initTag(version=(2, 3, 0))
-        with open(NewCover, "rb") as albumart:
-            imagedata = albumart.read()
-        audio.tag.images.set(3, imagedata, f"image/{ImgFormat}", u"cover")
+        audio.tag.images.set(3, ImgData, f"image/{ImgFormat}", u"cover")
         audio.tag.save()
+
+        music = ID3(FilePath)
+        CoverImg = APIC(encoding=3, mime=f"image/{ImgFormat}", type=3, desc=u"cover", data=ImgData)
+        music.add(CoverImg)
 
 def AlbumChange(FilePath, NewAlbum):
     audio = Audio(FilePath)

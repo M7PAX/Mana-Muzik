@@ -2,7 +2,8 @@ import eyed3
 import mutagen
 import Functions
 from mutagen.id3 import ID3, APIC
-from mutagen.easyid3 import EasyID3
+from mutagen.easyid3 import EasyID3, EasyID3KeyError
+
 
 # Path = "C:/Users/niksu/Music/folder/Freddie Dredd - Kill Again.mp3"
 # title, artist, cover, album, tn, genre, year, comment
@@ -12,20 +13,22 @@ def GetTitle(FilePath):
         audio = EasyID3(FilePath)
         title = audio["title"][0]
         return str(title)
-    except Exception as e:
-        # print(f"Error: {e}")
+    except EasyID3KeyError as e:
+        print(f"Error: {e}")
         return None
+
 
 def GetArtist(FilePath):
     try:
         audio = EasyID3(FilePath)
         artist = audio["artist"][0]
         return str(artist)
-    except Exception as e:
-        # print(f"Error: {e}")
+    except EasyID3KeyError as e:
+        print(f"Error: {e}")
         return None
 
-#eyeD3
+
+# eyeD3
 def GetAlbum(FilePath):
     audio = eyed3.load(FilePath)
     album = audio.tag.album
@@ -40,36 +43,39 @@ def GetTn(FilePath):
         audio = EasyID3(FilePath)
         tn = audio.get("tracknumber")[0]
         return str(tn)
-    except Exception as e:
-        # print(f"Error: {e}")
+    except EasyID3KeyError as e:
+        print(f"Error: {e}")
         return None
+
 
 def GetGenre(FilePath):
     try:
         audio = EasyID3(FilePath)
         genre = audio.get("genre")[0]
         return genre
-    except Exception as e:
-        # print(f"Error: {e}")
+    except EasyID3KeyError as e:
+        print(f"Error: {e}")
         return None
+
 
 def GetYear(FilePath):
     try:
         audio = EasyID3(FilePath)
         year = audio.get("date")[0]
         return str(year)
-    except Exception as e:
-        # print(f"Error: {e}")
+    except EasyID3KeyError as e:
+        print(f"Error: {e}")
         return None
 
-#eyeD3
+
+# eyeD3
 def GetComment(FilePath):
     try:
         audio = eyed3.load(FilePath)
         comment = audio.tag.comments[0].text
         return str(comment)
     except Exception as e:
-        # print(f"Error: {e}")
+        print(f"Error: {e}")
         return None
 
 
@@ -82,11 +88,13 @@ def Audio(FilePath):
         audio.add_tags()
         return audio
 
+
 def TitleChange(FilePath, NewTitle):
     audio = Audio(FilePath)
     EasyID3.RegisterTextKey("title", "TIT2")
     audio["title"] = NewTitle
     audio.save(FilePath)
+
 
 def ArtistChange(FilePath, NewArtist):
     audio = Audio(FilePath)
@@ -94,28 +102,30 @@ def ArtistChange(FilePath, NewArtist):
     audio["artist"] = NewArtist
     audio.save(FilePath)
 
+
 # eyeD3 and mutagen.id3
 # add image format check for only jpg and png format
-def CoverChange(FilePath, NewCover):
-    RemoveCover(FilePath)
-    if ('/' in NewCover) == True:
-        if NewCover.startswith('{' or '"') and NewCover.endswith('}' or '"'):
-            NewCover = NewCover[1:-1]
-        ImgFormat = Functions.GetImgFormat(NewCover)
-        if NewCover == None:
+def CoverChange(file_path, new_cover):
+    RemoveCover(file_path)
+    if '/' in new_cover:
+        if new_cover.startswith('{' or '"') and new_cover.endswith('}' or '"'):
+            new_cover = new_cover[1:-1]
+        img_format = Functions.GetImgFormat(new_cover)
+        if new_cover is None:
             return None
 
-        with open(NewCover, "rb") as AlbumArt:
-            ImgData = AlbumArt.read()
+        with open(new_cover, "rb") as AlbumArt:
+            img_data = AlbumArt.read()
 
-        audio = eyed3.load(FilePath)
+        audio = eyed3.load(file_path)
         audio.initTag(version=(2, 3, 0))
-        audio.tag.images.set(3, ImgData, f"image/{ImgFormat}", u"cover")
+        audio.tag.images.set(3, img_data, f"image/{img_format}", u"cover")
         audio.tag.save()
 
-        music = ID3(FilePath)
-        CoverImg = APIC(encoding=3, mime=f"image/{ImgFormat}", type=3, desc=u"cover", data=ImgData)
+        music = ID3(file_path)
+        CoverImg = APIC(encoding=3, mime=f"image/{img_format}", type=3, desc=u"cover", data=img_data)
         music.add(CoverImg)
+
 
 def AlbumChange(FilePath, NewAlbum):
     audio = Audio(FilePath)
@@ -123,17 +133,20 @@ def AlbumChange(FilePath, NewAlbum):
     audio["album"] = str(NewAlbum)
     audio.save()
 
-def TnChange(FilePath,NewTN):
+
+def TnChange(FilePath, NewTN):
     audio = Audio(FilePath)
     EasyID3.RegisterTextKey("tracknumber", "TRCK")
     audio["tracknumber"] = str(NewTN)
     audio.save()
 
-def GenreChange(FilePath,NewGenre):
+
+def GenreChange(FilePath, NewGenre):
     audio = Audio(FilePath)
-    #EasyID3.RegisterTextKey("genre", "")
+    # EasyID3.RegisterTextKey("genre", "")
     audio["genre"] = str(NewGenre)
     audio.save()
+
 
 def YearChange(FilePath, NewYear):
     audio = Audio(FilePath)
@@ -141,11 +154,13 @@ def YearChange(FilePath, NewYear):
     audio["year"] = str(NewYear)
     audio.save()
 
-#eyeD3
-def CommentChange(FilePath,NewComment):
+
+# eyeD3
+def CommentChange(FilePath, NewComment):
     audio = eyed3.load(FilePath)
     audio.tag.comments.set(NewComment)
     audio.tag.save()
+
 
 def RemoveCover(FilePath):
     audio = eyed3.load(FilePath)

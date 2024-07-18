@@ -1,15 +1,19 @@
 import os
 import eyed3
-import MP3Info
 import mutagen
+import MP3Info
+from mutagen.id3 import ID3
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
-from mutagen.id3 import ID3, TIT2, TPE1, TRCK, TALB
 
-MusicFolder ='C:/Users/niksu/Music/Juice WRLD'
+MusicFolder = 'C:/Users/niksu/Music/Juice WRLD'
+CoverFolder = 'C:/Users/niksu/OneDrive/New folder/Attēli/Juice WRLD Covers'
 Artist = "Juice WRLD"
 files = os.listdir(MusicFolder)
-#file, title, artist, album, tn, genre, year, comment
+covers = os.listdir(CoverFolder)
+
+
+# file, title, artist, album, tn, genre, year, comment
 
 def TitleAuto():
     for file in files:
@@ -18,87 +22,133 @@ def TitleAuto():
 
             try:
                 audio = EasyID3(file_path)
-            except mutagen.id3.ID3NoHeaderError:
+            except ID3NoHeaderError:
                 audio = mutagen.File(file_path, easy=True)
                 audio.add_tags()
 
-            type(audio)
             title = file[:-4]
             audio['title'] = title
-            audio.save()
+            try:
+                audio.save()
+            except mutagen.MutagenError as e:
+                print(f"Error saving title for {file}: {e}")
+
 
 def ArtistAuto():
-    #artist = TPE1(encoding=3, text=Artist)
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
 
             try:
                 audio = EasyID3(file_path)
-            except mutagen.id3.ID3NoHeaderError:
+            except ID3NoHeaderError:
                 audio = mutagen.File(file_path, easy=True)
                 audio.add_tags()
 
-            type(audio)
             audio['artist'] = Artist
-            audio.save()
+            try:
+                audio.save()
+            except mutagen.MutagenError as e:
+                print(f"Error saving artist for {file}: {e}")
+
+
+def CoverAuto():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_name = os.path.splitext(file)[0]
+            cover_file = file_name + ".png"
+            if cover_file in covers:
+                file_path = os.path.join(MusicFolder, file)
+                cover_path = os.path.join(CoverFolder, cover_file)
+                try:
+                    MP3Info.CoverChange(file_path, cover_path)
+                except Exception as e:
+                    print(f"Error changing cover for {file}: {e}")
+            else:
+                print(f"No cover found for {file}")
 
 
 def RemoveAlbum():
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            if 'TALB' in audio:
-                del audio['TALB']
-            audio.save()
+            try:
+                audio = ID3(file_path)
+                if 'TALB' in audio:
+                    del audio['TALB']
+                audio.save()
+            except Exception as e:
+                print(f"Error removing album for {file}: {e}")
 
-def RemoveCover():
-    for file in files:
-        if file.endswith(".mp3"):
-            file_path = os.path.join(MusicFolder, file)
-            MP3Info.RemoveCover(file_path)
 
 def RemoveTN():
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            if 'TRCK' in audio:
-                del audio['TRCK']
-            audio.save()
+            try:
+                audio = ID3(file_path)
+                if 'TRCK' in audio:
+                    del audio['TRCK']
+                audio.save()
+            except Exception as e:
+                print(f"Error removing track number for {file}: {e}")
+
 
 def RemoveGenre():
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-            audio = eyed3.load(file_path)
-            audio.tag.genre = None
-            audio.tag.save()
+            try:
+                audio = eyed3.load(file_path)
+                audio.tag.genre = None
+                audio.tag.save()
+            except Exception as e:
+                print(f"Error removing genre for {file}: {e}")
+
 
 def RemoveYear():
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-            audio = ID3(file_path)
-            if 'TDRC' in audio:
-                del audio['TDRC']
-            audio.save()
+            try:
+                audio = ID3(file_path)
+                if 'TDRC' in audio:
+                    del audio['TDRC']
+                audio.save()
+            except Exception as e:
+                print(f"Error removing year for {file}: {e}")
+
 
 def RemoveComment():
     for file in files:
         if file.endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-            audio = eyed3.load(file_path)
-            audio.tag.comments.set('')
-            audio.tag.save()
+            try:
+                audio = eyed3.load(file_path)
+                audio.tag.comments.set('')
+                audio.tag.save()
+            except Exception as e:
+                print(f"Error removing comment for {file}: {e}")
 
+
+def RemoveCover():
+    for file in files:
+        if file.endswith(".mp3"):
+            file_path = os.path.join(MusicFolder, file)
+            try:
+                MP3Info.RemoveCover(file_path)
+            except Exception as e:
+                print(f"Error removing cover for {file}: {e}")
+
+# CoverAuto()
 # TitleAuto()
 # ArtistAuto()
 
 # RemoveAlbum()
-# RemoveCover()
 # RemoveTN()
 # RemoveGenre()
 # RemoveYear()
+
+# RemoveCover()
+
 # RemoveComment()

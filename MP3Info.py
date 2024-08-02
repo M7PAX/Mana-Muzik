@@ -46,12 +46,14 @@ def GetTn(FilePath):
     except EasyID3KeyError as e:
         print(f"Error: {e}")
         return None
+    except TypeError as e:
+        return ""
 
 
 def GetGenre(FilePath):
     try:
         audio = EasyID3(FilePath)
-        genre = audio.get("genre")[0]
+        genre = audio.get("genre")
         return genre
     except EasyID3KeyError as e:
         print(f"Error: {e}")
@@ -66,6 +68,8 @@ def GetYear(FilePath):
     except EasyID3KeyError as e:
         print(f"Error: {e}")
         return None
+    except TypeError as e:
+        return ""
 
 
 # eyeD3

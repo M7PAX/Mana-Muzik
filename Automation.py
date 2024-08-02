@@ -14,6 +14,7 @@ covers = os.listdir(CoverFolder)
 
 
 # file, title, artist, album, tn, genre, year, comment
+# add album, tn, genre, year, comment Auto functions
 
 def TitleAuto():
     for file in files:

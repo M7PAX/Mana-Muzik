@@ -1,366 +1,241 @@
-import os
 import io
 import eyed3
 import MP3Info
 import Functions
-import tkinterDnD
+import customtkinter
 import tkinter as tk
 from tkinter import *
+from PIL import Image
 from pathlib import Path
-from PIL import Image, ImageTk
-from tkinter import messagebox, ttk
+from customtkinter import *
+from tkinter import messagebox
 
-window = tkinterDnD.Tk()
+window = customtkinter.CTk()
 
-window.geometry("780x680")
-window.minsize(780, 680)
-
-Ico = Image.open("Images/Icon.jpg")
-IcoPhoto = ImageTk.PhotoImage(Ico)
-window.wm_iconphoto(False, IcoPhoto)
-
+window.geometry("780x780")
+window.minsize(780, 780)
 window.title("Mana Muzik")
+window.iconbitmap("Images/Icon.ico")
 
-LightMode = {
-    'bg': 'white',
-    'fg': 'black',
-    'entry_bg': '#eee',
-    'entry_fg': 'black',
-    'btn_bg': '#ddd',
-    'btn_fg': 'black'
-}
+customtkinter.set_default_color_theme("dark-blue")
 
-DarkMode = {
-    'bg': '#333',
-    'fg': 'white',
-    'entry_bg': '#555',
-    'entry_fg': 'white',
-    'btn_bg': '#444',
-    'btn_fg': 'white'
-}
-
-
-def FindFrames(window):
-    frames = [window]
-
-    def Explore(widget):
-        if isinstance(widget, tk.Frame):
-            frames.append(widget)
-        for child in widget.winfo_children():
-            Explore(child)
-
-    Explore(window)
-    return frames
-
-
-current_theme = DarkMode
-
-
-def ApplyTheme(theme, window):
-    frames = FindFrames(window)
-
-    global current_theme
-    current_theme = theme
-
-    for frame in frames:
-        frame.configure(bg=theme['bg'])
-
-        for widget in frame.winfo_children():
-            widget_type = widget.winfo_class()
-
-            if widget_type == 'Label':
-                widget.configure(bg=theme['bg'], fg=theme['fg'])
-            # elif widget_type == 'Scrollbar':
-            #     widget.configure(bg=theme['bg'], fg=theme['fg'])
-            elif widget_type == 'Entry':
-                widget.configure(bg=theme['entry_bg'], fg=theme['entry_fg'])
-            # elif widget_type == 'Combobox':
-            #     widget.configure(bg=theme['entry_bg'], fg=theme['entry_fg'])
-            elif widget_type == 'Listbox':
-                widget.configure(bg=theme['entry_bg'], fg=theme['entry_fg'])
-            elif widget_type == 'Button':
-                widget.configure(bg=theme['btn_bg'], fg=theme['btn_fg'])
+current_theme = 0
 
 
 # RANDOM FUN
-def AutoClick(event):
-    messagebox.showinfo(
-        message=f"Coming soon! Lil Bibby soon!"
-    )
-
-
-def Info(event):
-    messagebox.showinfo(title="Info",
-                        message=f"""Tutorial and Instructions
-
-1. Locate the "Music Directory" option in the top bar and add a directory, which is folder with a folder of each 
-artist or have a folder of your mp3 files. 2. Use the "Folders" drop-down menu to select the specific folder you 
-want to work with. 3. In the listbox, choose the desired song that you want to edit. Begin the editing process, 
-making any changes needed. Be sure to save your modifications when done. Note: To update the album cover, 
-drag and drop an image file (only supporting jpg, jpeg, and png formats) into the blank space where the cover would 
-be displayed.
-
-IMPORTANT Actions That May Cause Issues: Avoid copying, highlighting text, or using the "Tab" key in the editor, 
-as these actions will prevent changes from being saved.
-
-Bugs:
-In case the cover change doesn't work correctly, try removing the existing cover and then attempt to set it again.
-
-These guidelines should help you navigate through the program smoothly. If you encounter any other feel free to reach 
-out to me on GitHub at M7PAX. """)
-
-
-def GetFileN(fill_text):
-    period = fill_text.rfind(".")
-    if period != -1:
-        return fill_text[:period]
+def ApplyTheme():
+    global current_theme
+    current_theme = 0 if current_theme == 1 else 1
+    if current_theme == 0:
+        customtkinter.set_appearance_mode('dark')
+    else:
+        customtkinter.set_appearance_mode('light')
 
 
 # Frames
-TopBarF = tk.Frame(window)
-FolderListF = tk.Frame(window)
-CoverF = tk.Frame(window)
-EditorF = tk.Frame(window)
+TopBarF = customtkinter.CTkFrame(master=window)
+FileListF = customtkinter.CTkFrame(master=window)
+CoverF = customtkinter.CTkFrame(master=window)
+EditorF = customtkinter.CTkFrame(master=window)
 
 
 class TopBar:
     def __init__(self, parent):
         self.parent = parent
 
-        self.AutoB = tk.Button(TopBarF, text="Automation", bd=1)
-        self.AutoB.bind("<Button-1>", AutoClick)
-
-        self.FolderDirL = tk.Label(TopBarF, text="Music Directory:")
+        self.AutoB = customtkinter.CTkButton(master=TopBarF, text="Automation", command=Functions.AutoClick, width=10)
+        self.FolderDirL = customtkinter.CTkLabel(master=TopBarF, text="Music Directory:")
         self.MusicFolderDir = tk.StringVar()
-        self.FolderDirE = tk.Entry(TopBarF, textvariable=self.MusicFolderDir)
+        self.FolderDirE = customtkinter.CTkEntry(master=TopBarF, textvariable=self.MusicFolderDir)
 
-        self.ConfirmB = tk.Button(TopBarF, text="✔", bd=1)
-        self.ConfirmB.bind("<Button-1>", self.Confirm)
+        self.ConfirmB = customtkinter.CTkButton(master=TopBarF, text="✔", command=self.Confirm, width=2)
+        self.ModeB = customtkinter.CTkButton(master=TopBarF, text="Theme", command=ApplyTheme, width=10)
+        self.InfoB = customtkinter.CTkButton(master=TopBarF, text="Tutorial/Info", command=Functions.Info, width=10)
 
-        self.Divide = tk.Label(TopBarF, text="|")
-
-        self.ModeB = tk.Button(TopBarF, text="MODE", bd=1)
-        self.ModeB.bind("<Button-1>",
-                        lambda _: ApplyTheme(DarkMode if current_theme == LightMode else LightMode, window))
-
-        self.InfoB = tk.Label(TopBarF, text="Tutorial/Info")
-        self.InfoB.bind("<Button-1>", Info)
-
-        self.AutoB.pack(side="left", fill="both")
+        self.AutoB.pack(side="left", fill="both", padx=5, pady=5)
         self.FolderDirL.pack(side="left", fill="both")
-        self.FolderDirE.pack(side="left", fill="both", expand=True)
-        self.ConfirmB.pack(side="left", fill="both")
-        self.Divide.pack(side="left", fill="both")
-        self.ModeB.pack(side="left", fill="both")
-        self.InfoB.pack(side="left", fill="both")
+        self.FolderDirE.pack(side="left", fill="x", expand=True)
+        self.ConfirmB.pack(side="left", fill="both", padx=(0, 5), pady=5)
+        self.ModeB.pack(side="left", fill="both", padx=(0, 5), pady=5)
+        self.InfoB.pack(side="left", fill="both", padx=(0, 5), pady=5)
 
-    def GetFolderDir(self):
+    def GetFileDir(self):
         entry = Path(self.FolderDirE.get())
         if entry.is_dir():
-            folder_dir = self.FolderDirE.get()  # "c:/Users/niksu/Music"
+            folder_dir = "c:/Users/niksu/Music"  # self.FolderDirE.get()
             if folder_dir.startswith('"') and folder_dir.endswith('"'):
                 folder_dir = folder_dir[1:-1]
             return folder_dir
 
-    def Confirm(self, event):
-        direction = self.GetFolderDir()
-        if '/' in direction:
-            FLClass.DropMenu['values'] = (Functions.GetMusicFolders(direction))
+    def Confirm(self):
+        FLClass.CleanListBox()
+        FLClass.DropMenu.set("")
+        EditorClass.ClearEntry()
+
+        FLClass.GetCurrentDir("")
+        FLClass.ListBoxFill()
+        directory = self.GetFileDir()
+        if '/' in directory:
+            folders = Functions.GetMusicFolders(directory)
+            FLClass.DropMenu.configure(values=folders)
 
 
-class FolderList:
+class FileList:
     def __init__(self, parent):
         self.parent = parent
+        self.saved_name = ""
+        self.current_dir = ""
 
-        self.DropMenuF = tk.Frame(FolderListF)
+        self.DropMenuF = customtkinter.CTkFrame(master=FileListF)
 
-        self.FolderL = tk.Label(self.DropMenuF, text="Folders:")
-        self.DropMenu = ttk.Combobox(self.DropMenuF, state="readonly")
-        self.DropMenu.bind("<<ComboboxSelected>>", self.DropMenuSelect)
-
-        self.FLScrollbar = tk.Scrollbar(FolderListF)
-        self.FLListbox = tk.Listbox(FolderListF, width=60, yscrollcommand=self.FLScrollbar.set)
-        self.FLListbox.bind("<<ListboxSelect>>", self.ListboxSelected)
+        self.FolderL = customtkinter.CTkLabel(master=self.DropMenuF, text="Folders:")
+        self.DropMenu = customtkinter.CTkComboBox(master=self.DropMenuF, command=lambda _: (self.GetCurrentDir(""), self.ListBoxFill()), state="readonly", justify="center", values=[])
+        self.ListBox = customtkinter.CTkScrollableFrame(master=FileListF, width=350)
 
         self.DropMenuF.pack(side="top", fill="x")
         self.FolderL.pack(side="left")
         self.DropMenu.pack(side="top", fill="x")
-        self.FLListbox.pack(side="left", fill="y")
-        self.FLScrollbar.pack(side="left", fill="y")
+        self.ListBox.pack(side="left", fill="y")
 
-    def DropMenuSelect(self, event):
-        CurrentDir = TBClass.GetFolderDir() + "/" + self.DropMenu.get()
-        contents = os.listdir(CurrentDir)
-        self.ListboxUpdate(contents)
+    def CleanListBox(self):
+        for widget in self.ListBox.winfo_children():
+            widget.destroy()
 
-    def GetSelectedIndex(self):
-        selected_index = self.FLListbox.curselection()
-        if not selected_index:
-            return None
+    def GetCurrentDir(self, name):
+        if name != "":
+            self.saved_name = name
+            self.current_dir = TBClass.GetFileDir() + "/" + self.DropMenu.get() + "/" + self.saved_name
+        elif self.DropMenu.get() == "":
+            self.current_dir = TBClass.GetFileDir()
+        elif self.DropMenu.get() != "":
+            self.current_dir = TBClass.GetFileDir() + "/" + self.DropMenu.get()
         else:
-            return selected_index
+            self.current_dir = TBClass.GetFileDir() + "/" + self.DropMenu.get() + "/" + self.saved_name
 
-    def GetCurrentDir(self):
-        current_dir = TBClass.GetFolderDir() + "/" + self.DropMenu.get() + "/" + self.FLListbox.get(
-            self.GetSelectedIndex())
-        return current_dir
+    def ListBoxSelected(self):
+        EditorClass.FileField.FillEntry(Functions.GetFileName(self.saved_name))
+        CoverClass.CoverE.delete(0, tk.END)
 
-    def ListboxUpdate(self, contents):
-        self.FLListbox.delete(0, tk.END)
+        EditorClass.TitleField.FillEntry(MP3Info.GetTitle(self.current_dir))
+        EditorClass.ArtistField.FillEntry(MP3Info.GetArtist(self.current_dir))
+        CoverClass.FillCover(self.current_dir)
+        EditorClass.AlbumField.FillEntry(MP3Info.GetAlbum(self.current_dir))
+        EditorClass.TnField.FillEntry(MP3Info.GetTn(self.current_dir))
+        EditorClass.GenreField.FillEntry(MP3Info.GetGenre(self.current_dir))
+        EditorClass.YearField.FillEntry(MP3Info.GetYear(self.current_dir))
+        EditorClass.CommentField.FillEntry(MP3Info.GetComment(self.current_dir))
+
+    def ListBoxFill(self):
+        self.CleanListBox()
+
+        contents = os.listdir(self.current_dir)
         for content in contents:
-            self.FLListbox.insert(tk.END, content)
-        self.FLScrollbar.config(command=self.FLListbox.yview)
-
-    def ListboxSelected(self, event):
-        if self.DropMenu.get() == "":
-            return
-        else:
-            EditorClass.FileField.FillEntry(GetFileN(self.FLListbox.get(self.GetSelectedIndex())))
-
-            CoverClass.RefreshPathE()
-
-            CurrentDir = self.GetCurrentDir()
-            EditorClass.TitleField.FillEntry(MP3Info.GetTitle(CurrentDir))
-            EditorClass.ArtistField.FillEntry(MP3Info.GetArtist(CurrentDir))
-            CoverClass.FillCover(CurrentDir)
-            EditorClass.AlbumField.FillEntry(MP3Info.GetAlbum(CurrentDir))
-            EditorClass.TnField.FillEntry(MP3Info.GetTn(CurrentDir))
-            EditorClass.GenreField.FillEntry(MP3Info.GetGenre(CurrentDir))
-            EditorClass.YearField.FillEntry(MP3Info.GetYear(CurrentDir))
-            EditorClass.CommentField.FillEntry(MP3Info.GetComment(CurrentDir))
+            if content.endswith(".mp3"):
+                NameB = customtkinter.CTkButton(master=self.ListBox, text=content)
+                NameB.pack(side="top", fill="x", padx=2, pady=2)
+                name = NameB.cget("text")
+                NameB.configure(command=lambda n=name: (self.GetCurrentDir(n), self.ListBoxSelected()))
 
 
 class Cover:
     def __init__(self, parent):
         self.parent = parent
 
-        self.ImgSize = (300, 300)
-
-        self.CoverEntryF = tk.Frame(CoverF)
+        self.CoverEntryF = customtkinter.CTkFrame(master=CoverF)
 
         self.CoverInput = StringVar()
-        self.CoverL = tk.Label(self.CoverEntryF, text="Cover:", width=8)
-        self.CoverE = Entry(self.CoverEntryF, textvar=self.CoverInput)
-        self.CoverPathB = tk.Button(self.CoverEntryF, text=" x ", bd=1)
-        self.CoverPathB.bind("<Button-1>", self.RemovePath)
+        self.CoverL = customtkinter.CTkLabel(master=self.CoverEntryF, text="Cover:", width=65)
+        self.CoverE = customtkinter.CTkEntry(master=self.CoverEntryF, textvariable=self.CoverInput)
+        self.CoverEntryB = customtkinter.CTkButton(master=self.CoverEntryF, text="X", command=self.CoverE.delete(0, tk.END), width=30)
 
-        self.CoverImage = tk.Label(CoverF)
-        self.CoverB = tk.Button(CoverF, text=" x ", bd=1)
-        self.CoverB.bind("<Button-1>", self.CoverRemove)
-        self.CoverE.register_drop_target("*")
-        self.CoverE.bind("<<Drop>>", self.Drop)
-        self.CoverE.register_drag_source("*")
-        self.CoverE.bind("<<DragInitCmd>>", self.Drag)
-        self.CoverDnD = ttk.Label(CoverF, ondrop=self.Drop, ondragstart=self.Drag, textvar=self.CoverInput,
-                                  relief="solid", padding=142.4, width=3)
+        self.CoverImage = customtkinter.CTkLabel(master=CoverF, text="")
+        self.CoverB = customtkinter.CTkButton(master=CoverF, text="X", command=self.CoverRemove)
+
+        self.CoverReplacement = customtkinter.CTkLabel(CoverF, text="'COVER'", width=300, height=300)
 
         self.CoverEntryF.pack(side="bottom", fill="x")
-        self.CoverDnD.pack(side="top", pady=(10, 0))
-        self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(47, 47))
+        self.CoverReplacement.pack(side="top", pady=(10, 0))
+        self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
         self.CoverL.pack(side="left")
         self.CoverE.pack(side="left", fill="x", expand=True, ipady=2)
-        self.CoverPathB.pack(side="right", padx=(0, 10))
+        self.CoverEntryB.pack(side="right", padx=(0, 10))
 
     def FillCover(self, path):
         audio = eyed3.load(path)
         if audio.tag and audio.tag.images:
             for i in audio.tag.images:
-                img = ImageTk.PhotoImage(Image.open(io.BytesIO(i.image_data)).resize(self.ImgSize))
-            self.CoverImage.image = img
-            self.CoverImage.config(image=img)
+                img = customtkinter.CTkImage(dark_image=Image.open(io.BytesIO(i.image_data)), size=(300, 300))
+                self.CoverImage.configure(image=img)
 
-            self.CoverDnD.pack_forget()
+            self.CoverReplacement.pack_forget()
             self.CoverB.pack_forget()
             self.CoverImage.pack(side="top", fill="both", expand=True, pady=(10, 0))
-            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(47, 47))
+            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
         else:
             self.CoverImage.pack_forget()
             self.CoverB.pack_forget()
-            self.CoverDnD.pack(side="top", pady=(10, 0))
-            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(47, 47))
+            self.CoverReplacement.pack(side="top", pady=(10, 0))
+            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
 
-    def CoverRemove(self, event):
-        if FLClass.GetSelectedIndex() is None:
-            return
+    def CoverRemove(self):
+        audio = eyed3.load(FLClass.GetCurrentDir(""))
+        if audio.tag and audio.tag.images:
+            result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
+            if result == 'yes':
+                MP3Info.RemoveCover(FLClass.GetCurrentDir(""))
+                self.CoverImage.pack_forget()
+                self.CoverB.pack_forget()
+                self.CoverReplacement.pack(side="top", pady=(10, 0))
+                self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
         else:
-            audio = eyed3.load(FLClass.GetCurrentDir())
-            if audio.tag and audio.tag.images:
-                if FLClass.GetSelectedIndex() is None:
-                    return
-                else:
-                    result = messagebox.askquestion("Remove or Cancel", "Do you want to remove the current cover?")
-                    if result == 'yes':
-                        MP3Info.RemoveCover(FLClass.GetCurrentDir())
-                        self.CoverImage.pack_forget()
-                        self.CoverB.pack_forget()
-                        self.CoverDnD.pack(side="top", pady=(10, 0))
-                        self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(47, 47))
-                    else:
-                        return
-            else:
-                messagebox.showwarning(title="Invalid", message=f"There is no image to remove!")
-
-    def Drop(self, event):
-        self.CoverInput.set(event.data)
-
-    def Drag(self, event):
-        return tkinterDnD.COPY, "DND_Text"
-
-    def RefreshPathE(self):
-        self.CoverE.delete(0, tk.END)
-
-    def RemovePath(self, event):
-        self.CoverE.delete(0, tk.END)
+            messagebox.showwarning(title="Invalid", message=f"There is no image to remove!")
 
 
 # Editor
-class EditorEntrys:
+class EditorEntry:
     def __init__(self, parent, label_text):
         self.parent = parent
 
-        self.EditorL = tk.Label(parent, text=label_text, width=8)
+        self.EditorL = customtkinter.CTkLabel(master=parent, text=label_text, width=65)
         self.EditorInput = tk.StringVar()
-        self.EditorE = tk.Entry(parent, textvariable=self.EditorInput)
-        self.EditorB = tk.Button(parent, text=" x ", bd=1)
-        self.EditorB.bind("<Button-1>", self.RemoveEntry)
+        self.EditorE = customtkinter.CTkEntry(master=parent, textvariable=self.EditorInput)
+        self.EditorB = customtkinter.CTkButton(master=parent, text="X", command=self.EditorE.delete(0, tk.END), width=30)
+
+    def ClearEntry(self):
+        self.EditorE.delete(0, tk.END)
+        CoverClass.CoverE.delete(0, tk.END)
 
     def FillEntry(self, fill_text):
-        self.EditorE.delete(0, tk.END)
+        self.ClearEntry()
         self.EditorE.insert(0, Functions.CheckFill(fill_text))
-
-    def RemoveEntry(self, event):
-        self.EditorE.delete(0, tk.END)
 
 
 # file, title, artist, album, tn, genre, year, comment
-
-class Editor(EditorEntrys):
+class Editor(EditorEntry):
     def __init__(self, parent):
         super().__init__(parent, None)
 
-        self.FileF = tk.Frame(EditorF)
-        self.TitleF = tk.Frame(EditorF)
-        self.ArtistF = tk.Frame(EditorF)
-        self.AlbumF = tk.Frame(EditorF)
-        self.TnF = tk.Frame(EditorF)
-        self.GenreF = tk.Frame(EditorF)
-        self.YearF = tk.Frame(EditorF)
-        self.CommentF = tk.Frame(EditorF)
+        self.FileF = customtkinter.CTkFrame(master=EditorF)
+        self.TitleF = customtkinter.CTkFrame(master=EditorF)
+        self.ArtistF = customtkinter.CTkFrame(master=EditorF)
+        self.AlbumF = customtkinter.CTkFrame(master=EditorF)
+        self.TnF = customtkinter.CTkFrame(master=EditorF)
+        self.GenreF = customtkinter.CTkFrame(master=EditorF)
+        self.YearF = customtkinter.CTkFrame(master=EditorF)
+        self.CommentF = customtkinter.CTkFrame(master=EditorF)
 
-        self.FileField = EditorEntrys(self.FileF, "File:")
-        self.TitleField = EditorEntrys(self.TitleF, "Title:")
-        self.ArtistField = EditorEntrys(self.ArtistF, "Artist:")
-        self.AlbumField = EditorEntrys(self.AlbumF, "Album:")
-        self.TnField = EditorEntrys(self.TnF, "TrackN:")
-        self.GenreField = EditorEntrys(self.GenreF, "Genre:")
-        self.YearField = EditorEntrys(self.YearF, "Year:")
-        self.CommentField = EditorEntrys(self.CommentF, "Comment:")
+        self.FileField = EditorEntry(self.FileF, "File:")
+        self.TitleField = EditorEntry(self.TitleF, "Title:")
+        self.ArtistField = EditorEntry(self.ArtistF, "Artist:")
+        self.AlbumField = EditorEntry(self.AlbumF, "Album:")
+        self.TnField = EditorEntry(self.TnF, "TrackN:")
+        self.GenreField = EditorEntry(self.GenreF, "Genre:")
+        self.YearField = EditorEntry(self.YearF, "Year:")
+        self.CommentField = EditorEntry(self.CommentF, "Comment:")
 
-        self.SaveB = tk.Button(window, text="Save", bd=1)
-        self.SaveB.bind("<Button-1>", self.Save)
+        self.SaveB = customtkinter.CTkButton(master=window, text="Save", command=self.Save)
 
-        PackWidgets(self.FileF, self.FileField.EditorL, self.FileField.EditorE, self.FileField.EditorB,
-                    (0, 0))  # pady=(0,0)
+        PackWidgets(self.FileF, self.FileField.EditorL, self.FileField.EditorE, self.FileField.EditorB)
         PackWidgets(self.TitleF, self.TitleField.EditorL, self.TitleField.EditorE, self.TitleField.EditorB)
         PackWidgets(self.ArtistF, self.ArtistField.EditorL, self.ArtistField.EditorE, self.ArtistField.EditorB)
         PackWidgets(self.AlbumF, self.AlbumField.EditorL, self.AlbumField.EditorE, self.AlbumField.EditorB)
@@ -371,19 +246,20 @@ class Editor(EditorEntrys):
 
         self.SaveB.pack(side="right", fill="both", expand=True)
 
-    def Save(self, event):
-        if FLClass.GetSelectedIndex() is None:
-            return
-        else:
-            MP3Info.TitleChange(FLClass.GetCurrentDir(), self.TitleField.EditorE.get())
-            MP3Info.ArtistChange(FLClass.GetCurrentDir(), self.ArtistField.EditorE.get())
-            MP3Info.CoverChange(FLClass.GetCurrentDir(), CoverClass.CoverE.get())
-            MP3Info.AlbumChange(FLClass.GetCurrentDir(), self.AlbumField.EditorE.get())
-            MP3Info.TnChange(FLClass.GetCurrentDir(), self.TnField.EditorE.get())
-            MP3Info.GenreChange(FLClass.GetCurrentDir(), self.GenreField.EditorE.get())
-            MP3Info.YearChange(FLClass.GetCurrentDir(), self.YearField.EditorE.get())
-            MP3Info.CommentChange(FLClass.GetCurrentDir(), self.CommentField.EditorE.get())
-            Functions.FileChange(FLClass.GetCurrentDir(), self.FileField.EditorE.get())
+    def Save(self):
+        MP3Info.TitleChange(FLClass.GetCurrentDir(""), self.TitleField.EditorE.get())
+        MP3Info.ArtistChange(FLClass.GetCurrentDir(""), self.ArtistField.EditorE.get())
+        MP3Info.CoverChange(FLClass.GetCurrentDir(""), CoverClass.CoverE.get())
+        MP3Info.AlbumChange(FLClass.GetCurrentDir(""), self.AlbumField.EditorE.get())
+        MP3Info.TnChange(FLClass.GetCurrentDir(""), self.TnField.EditorE.get())
+        MP3Info.GenreChange(FLClass.GetCurrentDir(""), self.GenreField.EditorE.get())
+        MP3Info.YearChange(FLClass.GetCurrentDir(""), self.YearField.EditorE.get())
+        MP3Info.CommentChange(FLClass.GetCurrentDir(""), self.CommentField.EditorE.get())
+
+        file_name = self.FileField.EditorE.get()
+        Functions.FileChange(FLClass.GetCurrentDir(""), file_name)
+        FLClass.GetCurrentDir(Functions.GetDirectoryFile(file_name + ".mp3"))
+        FLClass.ListBoxFill()
 
 
 def PackWidgets(WidgetFrame, WidgetLabel, WidgetEntry, WidgetButton, pady=(5, 0)):
@@ -394,14 +270,13 @@ def PackWidgets(WidgetFrame, WidgetLabel, WidgetEntry, WidgetButton, pady=(5, 0)
 
 
 TopBarF.pack(side="top", fill="x")
-FolderListF.pack(side="left", fill="y")
+FileListF.pack(side="left", fill="y")
 CoverF.pack(side="top", fill="x", pady=10)
 EditorF.pack(side="top", fill="both", expand=True)
 
 if __name__ == "__main__":
     TBClass = TopBar(window)
-    FLClass = FolderList(window)
+    FLClass = FileList(window)
     CoverClass = Cover(window)
     EditorClass = Editor(window)
-    ApplyTheme(current_theme, window)
     window.mainloop()

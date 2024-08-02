@@ -62,7 +62,7 @@ class TopBar:
     def GetFileDir(self):
         entry = Path(self.FolderDirE.get())
         if entry.is_dir():
-            folder_dir = "c:/Users/niksu/Music"  # self.FolderDirE.get()
+            folder_dir = self.FolderDirE.get()  # "c:/Users/niksu/Music"
             if folder_dir.startswith('"') and folder_dir.endswith('"'):
                 folder_dir = folder_dir[1:-1]
             return folder_dir

@@ -47,6 +47,7 @@ class TopBar:
         self.FolderDirL = customtkinter.CTkLabel(master=TopBarF, text="Music Directory:")
         self.MusicFolderDir = tk.StringVar()
         self.FolderDirE = customtkinter.CTkEntry(master=TopBarF, textvariable=self.MusicFolderDir)
+        self.FolderDirB = customtkinter.CTkButton(master=TopBarF, text="Open Folder", command=self.OpenFolderDirectory, width=10)
 
         self.ConfirmB = customtkinter.CTkButton(master=TopBarF, text="✔", command=self.Confirm, width=2)
         self.ModeB = customtkinter.CTkButton(master=TopBarF, text="Theme", command=ApplyTheme, width=10)
@@ -55,14 +56,21 @@ class TopBar:
         self.AutoB.pack(side="left", fill="both", padx=5, pady=5)
         self.FolderDirL.pack(side="left", fill="both")
         self.FolderDirE.pack(side="left", fill="x", expand=True)
+        self.FolderDirB.pack(side="left", fill="x", padx=(1, 1), pady=5)
+
         self.ConfirmB.pack(side="left", fill="both", padx=(0, 5), pady=5)
         self.ModeB.pack(side="left", fill="both", padx=(0, 5), pady=5)
         self.InfoB.pack(side="left", fill="both", padx=(0, 5), pady=5)
 
+    def OpenFolderDirectory(self):
+        FolderDirectory = tk.filedialog.askdirectory()
+        self.FolderDirE.delete(0, tk.END)
+        self.FolderDirE.insert(0, FolderDirectory)
+
     def GetFileDir(self):
         entry = Path(self.FolderDirE.get())
         if entry.is_dir():
-            folder_dir = self.FolderDirE.get()  # "c:/Users/niksu/Music"
+            folder_dir = "c:/Users/niksu/Music"  # self.FolderDirE.get()
             if folder_dir.startswith('"') and folder_dir.endswith('"'):
                 folder_dir = folder_dir[1:-1]
             return folder_dir
@@ -142,6 +150,7 @@ class Cover:
         self.parent = parent
 
         self.CoverEntryF = customtkinter.CTkFrame(master=CoverF)
+        self.CoverButtonF = customtkinter.CTkFrame(master=CoverF)
 
         self.CoverInput = StringVar()
         self.CoverL = customtkinter.CTkLabel(master=self.CoverEntryF, text="Cover:", width=65)
@@ -149,16 +158,37 @@ class Cover:
         self.CoverEntryB = customtkinter.CTkButton(master=self.CoverEntryF, text="X", command=self.CoverE.delete(0, tk.END), width=30)
 
         self.CoverImage = customtkinter.CTkLabel(master=CoverF, text="")
-        self.CoverB = customtkinter.CTkButton(master=CoverF, text="X", command=self.CoverRemove)
+        self.CoverB = customtkinter.CTkButton(master=self.CoverButtonF, text="X", command=self.CoverRemove)
 
         self.CoverReplacement = customtkinter.CTkLabel(CoverF, text="'COVER'", width=300, height=300)
 
+        self.FileB = customtkinter.CTkButton(master=self.CoverButtonF, text="Open Cover", command=self.OpenFileCover)
+
         self.CoverEntryF.pack(side="bottom", fill="x")
         self.CoverReplacement.pack(side="top", pady=(10, 0))
-        self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
+
+        self.CoverButtonF.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
+        self.FileB.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.CoverB.pack(side="left", fill="x", expand=True)
+
         self.CoverL.pack(side="left")
         self.CoverE.pack(side="left", fill="x", expand=True, ipady=2)
         self.CoverEntryB.pack(side="right", padx=(0, 10))
+
+    def OpenFileCover(self):
+        CoverDirectory = tk.filedialog.askopenfilename()
+        self.CoverE.delete(0, tk.END)
+        self.CoverE.insert(0, CoverDirectory)
+
+    def CoverPackForget(self):
+        self.CoverButtonF.pack_forget()
+        self.CoverB.pack_forget()
+        self.FileB.pack_forget()
+
+    def CoverPack(self):
+        self.CoverButtonF.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
+        self.FileB.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.CoverB.pack(side="left", fill="x", expand=True)
 
     def FillCover(self, path):
         audio = eyed3.load(path)
@@ -168,14 +198,17 @@ class Cover:
                 self.CoverImage.configure(image=img)
 
             self.CoverReplacement.pack_forget()
-            self.CoverB.pack_forget()
+            self.CoverPackForget()
+
             self.CoverImage.pack(side="top", fill="both", expand=True, pady=(10, 0))
-            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
+            self.CoverPack()
+
         else:
             self.CoverImage.pack_forget()
-            self.CoverB.pack_forget()
+            self.CoverPackForget()
+
             self.CoverReplacement.pack(side="top", pady=(10, 0))
-            self.CoverB.pack(side="top", fill="x", expand=True, pady=(0, 10), padx=(50, 50))
+            self.CoverPack()
 
     def CoverRemove(self):
         audio = eyed3.load(FLClass.GetCurrentDir(""))

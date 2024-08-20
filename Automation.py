@@ -1,8 +1,6 @@
 import os
-import eyed3
 import mutagen
 import MP3Info
-from mutagen.id3 import ID3
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 

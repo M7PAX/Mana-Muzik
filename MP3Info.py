@@ -145,10 +145,10 @@ def HasCover(FilePath):
 
 
 # ========================
-# SETTERS / MODIFIERS
+# EDITORS
 # ========================
 
-def TitleChange(FilePath, NewTitle):
+def EditTitle(FilePath, NewTitle):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -159,7 +159,7 @@ def TitleChange(FilePath, NewTitle):
     _save_id3(audio, FilePath)
 
 
-def ArtistChange(FilePath, NewArtist):
+def EditArtist(FilePath, NewArtist):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -170,7 +170,7 @@ def ArtistChange(FilePath, NewArtist):
     _save_id3(audio, FilePath)
 
 
-def AlbumChange(FilePath, NewAlbum):
+def EditAlbum(FilePath, NewAlbum):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -181,7 +181,7 @@ def AlbumChange(FilePath, NewAlbum):
     _save_id3(audio, FilePath)
 
 
-def TnChange(FilePath, NewTN):
+def EditTn(FilePath, NewTN):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -192,7 +192,7 @@ def TnChange(FilePath, NewTN):
     _save_id3(audio, FilePath)
 
 
-def GenreChange(FilePath, NewGenre):
+def EditGenre(FilePath, NewGenre):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -203,7 +203,7 @@ def GenreChange(FilePath, NewGenre):
     _save_id3(audio, FilePath)
 
 
-def YearChange(FilePath, NewYear):
+def EditYear(FilePath, NewYear):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -216,7 +216,7 @@ def YearChange(FilePath, NewYear):
     _save_id3(audio, FilePath)
 
 
-def CommentChange(FilePath, NewComment):
+def EditComment(FilePath, NewComment):
     audio = _get_id3(FilePath)
     if audio is None:
         return
@@ -227,7 +227,7 @@ def CommentChange(FilePath, NewComment):
     _save_id3(audio, FilePath)
 
 
-def CoverChange(file_path, new_cover):
+def EditCover(file_path, new_cover):
     if not new_cover or not os.path.isfile(new_cover):
         return
     if (new_cover.startswith('{') and new_cover.endswith('}')) or (new_cover.startswith('"') and new_cover.endswith('"')):
@@ -259,47 +259,46 @@ def CoverChange(file_path, new_cover):
     audio.add(cover_img)
     _save_id3(audio, file_path)
 
-
 # ========================
 # DELETERS
 # ========================
 
-def RemoveTitle(FilePath):
+def DeleteTitle(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TIT2")
         _save_id3(audio, FilePath)
 
 
-def RemoveArtist(FilePath):
+def DeleteArtist(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TPE1")
         _save_id3(audio, FilePath)
 
 
-def RemoveAlbum(FilePath):
+def DeleteAlbum(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TALB")
         _save_id3(audio, FilePath)
 
 
-def RemoveTn(FilePath):
+def DeleteTn(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TRCK")
         _save_id3(audio, FilePath)
 
 
-def RemoveGenre(FilePath):
+def DeleteGenre(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TCON")
         _save_id3(audio, FilePath)
 
 
-def RemoveYear(FilePath):
+def DeleteYear(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("TDRC")
@@ -307,46 +306,23 @@ def RemoveYear(FilePath):
         _save_id3(audio, FilePath)
 
 
-def RemoveComment(FilePath):
+def DeleteComment(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("COMM")
         _save_id3(audio, FilePath)
 
 
-def RemoveCover(FilePath):
+def DeleteCover(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         audio.delall("APIC")
         _save_id3(audio, FilePath)
 
 
-def RemoveAllMetadata(FilePath):
+def DeleteAllMetadata(FilePath):
     audio = _get_id3(FilePath)
     if audio is not None:
         for tag in ("TIT2", "TPE1", "TALB", "TRCK", "TCON", "TDRC", "TYER", "COMM", "APIC"):
             audio.delall(tag)
         _save_id3(audio, FilePath)
-
-
-# Aliases for deletion
-DeleteTitle = RemoveTitle
-DeleteTitles = RemoveTitle
-DeleteArtist = RemoveArtist
-DeleteArtists = RemoveArtist
-DeleteAlbum = RemoveAlbum
-DeleteAlbums = RemoveAlbum
-DeleteTn = RemoveTn
-DeleteTns = RemoveTn
-DeleteTrackNumber = RemoveTn
-DeleteTrackNumbers = RemoveTn
-DeleteGenre = RemoveGenre
-DeleteGenres = RemoveGenre
-DeleteYear = RemoveYear
-DeleteYears = RemoveYear
-DeleteComment = RemoveComment
-DeleteComments = RemoveComment
-DeleteCover = RemoveCover
-DeleteCovers = RemoveCover
-DeleteAllMetadata = RemoveAllMetadata
-DeleteAll = RemoveAllMetadata

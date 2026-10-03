@@ -1,51 +1,67 @@
 import os
-import mutagen
 import MP3Info
-from mutagen.easyid3 import EasyID3
-from mutagen.id3 import ID3NoHeaderError
 
 MusicFolder = 'C:/Users/niksu/Music/'
 CoverFolder = 'C:/Users/niksu/OneDrive/New folder/Attēli/Juice WRLD Covers'
 Artist = "Juice WRLD"
-files = os.listdir(MusicFolder)
-covers = os.listdir(CoverFolder)
+files = os.listdir(MusicFolder) if os.path.isdir(MusicFolder) else []
+covers = os.listdir(CoverFolder) if os.path.isdir(CoverFolder) else []
 
 # file, title, artist, album, tn, genre, year, comment
-AddFunctions = [[MP3Info.ArtistChange, "Juice WRLD"]]  # , [MP3Info.AlbumChange, "The"], [MP3Info.TnChange, "999"], [MP3Info.GenreChange, "Rap"], [MP3Info.YearChange, "2018"], [MP3Info.CommentChange, ":)"]
-RemoveFunctions = [[MP3Info.ArtistChange, ""]]  # , [MP3Info.AlbumChange, ""], [MP3Info.TnChange, ""], [MP3Info.GenreChange, ""], [MP3Info.YearChange, ""], [MP3Info.CommentChange, ""]
+AddFunctions = [[MP3Info.ArtistChange, "Juice WRLD"]]
+RemoveFunctions = [
+    [MP3Info.TitleChange, ""],
+    [MP3Info.ArtistChange, ""],
+    [MP3Info.AlbumChange, ""],
+    [MP3Info.TnChange, ""],
+    [MP3Info.GenreChange, ""],
+    [MP3Info.YearChange, ""],
+    [MP3Info.CommentChange, ""],
+]
+
+
+def _resolve_file(file_path=None):
+    if file_path:
+        return file_path
+    # Check if ManaMuzik GUI is active with a selected file
+    try:
+        import sys
+        for mod_name in ("__main__", "ManaMuzik"):
+            mod = sys.modules.get(mod_name)
+            if mod and hasattr(mod, "FLClass") and mod.FLClass:
+                cur = mod.FLClass.GetCurrentDir()
+                if cur and os.path.isfile(cur):
+                    return cur
+    except Exception:
+        pass
+    return None
 
 
 def ChangeAutomation(FunctionList):
     for i in FunctionList:
         for file in files:
-            if file.endswith(".mp3"):
+            if file.lower().endswith(".mp3"):
                 file_path = os.path.join(MusicFolder, file)
-
-                i[0](file_path, i[1])
+                try:
+                    i[0](file_path, i[1])
+                except Exception as e:
+                    print(f"Error updating {file}: {e}")
 
 
 def TitleAuto():
     for file in files:
-        if file.endswith(".mp3"):
+        if file.lower().endswith(".mp3"):
             file_path = os.path.join(MusicFolder, file)
-
+            title = os.path.splitext(file)[0]
             try:
-                audio = EasyID3(file_path)
-            except ID3NoHeaderError:
-                audio = mutagen.File(file_path, easy=True)
-                audio.add_tags()
-
-            title = file[:-4]
-            audio['title'] = title
-            try:
-                audio.save()
-            except mutagen.MutagenError as e:
+                MP3Info.TitleChange(file_path, title)
+            except Exception as e:
                 print(f"Error saving title for {file}: {e}")
 
 
 def CoverAuto():
     for file in files:
-        if file.endswith(".mp3"):
+        if file.lower().endswith(".mp3"):
             file_name = os.path.splitext(file)[0]
             cover_file = file_name + ".png"
             if cover_file in covers:
@@ -59,8 +75,98 @@ def CoverAuto():
                 print(f"No cover found for {file}")
 
 
-# ChangeAutomation(AddFunctions)
-# ChangeAutomation(RemoveFunctions)
+def DeleteComments(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveComment(target)
+    return True
 
-# TitleAuto()
-# CoverAuto()
+
+def DeleteTitles(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveTitle(target)
+    return True
+
+
+def DeleteArtists(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveArtist(target)
+    return True
+
+
+def DeleteAlbums(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveAlbum(target)
+    return True
+
+
+def DeleteTrackNumbers(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveTn(target)
+    return True
+
+
+def DeleteGenres(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveGenre(target)
+    return True
+
+
+def DeleteYears(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveYear(target)
+    return True
+
+
+def DeleteCovers(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveCover(target)
+    return True
+
+
+def DeleteAllMetadata(file_path=None, *args):
+    target = _resolve_file(file_path)
+    if not target or not os.path.isfile(target):
+        print(f"Invalid MP3 file: {target}")
+        return False
+    MP3Info.RemoveAllMetadata(target)
+    return True
+
+
+# Aliases for flexibility and consistency
+DeleteComment = DeleteComments
+DeleteTitle = DeleteTitles
+DeleteArtist = DeleteArtists
+DeleteAlbum = DeleteAlbums
+DeleteTrackNumber = DeleteTrackNumbers
+DeleteTn = DeleteTrackNumbers
+DeleteTns = DeleteTrackNumbers
+DeleteTrackN = DeleteTrackNumbers
+DeleteGenre = DeleteGenres
+DeleteYear = DeleteYears
+DeleteCover = DeleteCovers
+DeleteAll = DeleteAllMetadata
+DeleteMetadata = DeleteAllMetadata

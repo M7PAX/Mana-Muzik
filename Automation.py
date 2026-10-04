@@ -8,7 +8,7 @@ files = os.listdir(MusicFolder) if os.path.isdir(MusicFolder) else []
 covers = os.listdir(CoverFolder) if os.path.isdir(CoverFolder) else []
 
 # file, title, artist, album, tn, genre, year, comment
-AddFunctions = [[MP3Info.ArtistChange, "Juice WRLD"]]
+AddFunctions = [[MP3Info.EditArtist, "Juice WRLD"]]
 RemoveFunctions = [
     [MP3Info.TitleChange, ""],
     [MP3Info.ArtistChange, ""],
